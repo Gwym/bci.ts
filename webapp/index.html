@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>bci.js</title>
+    <link rel="shortcut icon" type="image/png" href="favicon.png" />
+    <script id="bci_worker" type="javascript/worker" >
+
+// var wslog = function(s) { self.postMessage({websocketLog: s}) }
+
+onmessage = function(e) { // e.data: WebsocketMessage
+
+  if (e.data.target === 0) { // 0 : BlocksType.Worker
+    if (e.data.messageType === 0) { // 0 : MessageTypes.WebsocketCreate
+      socketFactory(e.data.data.path);
+    }
+    else if (e.data.messageType === 1 ) {  // 1 : MessageTypes.WebsocketClose
+      websocket.close();
+    }
+  }
+  else {
+     // wslog('sending ' + JSON.stringify(e.data));
+     websocket.send(JSON.stringify(e.data));
+  }
+} 
+
+var websocket;
+var socketFactory = function(path) {
+
+  websocket = new WebSocket(path, 'eg001');
+  websocket.onerror = function (e) { self.postMessage( { error: JSON.stringify(e) } );  };
+  websocket.onopen = function (e) { self.postMessage( { target: 0, messageType: 0 } ); };  // 0 : BlocksType.Worker ; 0 : MessageTypes.WebsocketCreate
+  websocket.onclose = function (e) { self.postMessage( { target: 0, messageType: 1, data: { code: e.code, reason: e.reason } } ); }; // 1 : MessageTypes.WebsocketClose
+  websocket.onmessage = function (e) {
+    if (e.data instanceof ArrayBuffer) { 
+      self.postMessage({target: 'collector', data: e.data}); // TODO (0) : Enum BlocksType
+    }
+    else {
+      try {
+        self.postMessage(JSON.parse(e.data));
+      }
+      catch(e) {
+  		  self.postMessage({error: JSON.stringify(e), data: e.data});
+  		}
+    }
+  }
+}
+  </script>
+  <script src="client.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <nav id='mainmenu'>
+    <button id="menu-symbol" class="icon-btn">&#9783;</button>
+    <button id="canvas-state"></button>
+  </nav>
+  <div id="blocks-control">
+  </div>
+  <section id="canvas_container">
+  </section>
+  <section id="console_container">
+    <textarea id="text_console" readonly></textarea>
+  </section>
+  <section id="panel-auth">
+    <form id="form-auth" onsubmit="return false;">
+        <input type='text' id="user-id" placeholder="identifier" required>
+        <input type="password" id="user-pwd" placeholder="password" required>
+        <div><input type="submit" id="submit-auth" value="Authenticate"></div>
+    </form>
+  </section>
+</body>
+</html>

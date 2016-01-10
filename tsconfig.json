@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": false,
+        "sourceMap": false,
+        "outDir": "build/"
+    },
+    "files": [
+        "./server/typings/node/node.d.ts",
+        "./server/typings/ws/ws.d.ts",
+        "./server/typings/serialport/serialport.d.ts",
+        "./server/modules/obciserial.ts",
+        "./server/modules/filepersistor.ts",
+        "./server/commons.ts",
+        "./server/common_tr.ts",
+        "./tests/serialsimu.ts",
+        "./server/app.ts"
+    ]   
+}

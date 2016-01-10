@@ -1,57 +1,85 @@
 # bci.ts
 Brain computer interface in Typescript
 
-Setting up
-==========
+Note : a compiled version (javascript targeting ES6 and source map) is supplied, installing Typescript and compiling is optional,
+only required if you want to modifiy sources, target another ES version or remove source mapping.
 
-Install typescript (http://www.typescriptlang.org/)
+Usage
+=====
+
+
+Server :
+-------
+
+Install dependencies and launch server :
+
+```
+npm --prefix ./build/ install
+node ./build/server/app.js
+```
+
+
+Client :
+-------
+
+Point your browser to server address set in configuration (default : http://127.0.0.1:8080/ ).
+
+
+(Tested with NodeJs v5.0.0 and Chromium Version 47.0.2526.73 on Ubuntu 15.10 (64-bit))
+
+
+
+Prerequisite for building
+=========================
+
+Install typescript (see http://www.typescriptlang.org/)
+Install DefinitelyTyped for node, serialport and ws in ./server/typings (see http://definitelytyped.org/tsd/) 
+Optional : install Visual Studio Code EDI (https://code.visualstudio.com/docs/languages/typescript)
+
+Download or fetch project form Github, install dependencies for server side :
+```
+cd ./build
+npm install
+```
+
+Server building :
+==========================
 
 With Visual Studio Code
 -----------------------
-(TODO, see http://definitelytyped.org/tsd/)
+
+Open the root folder (containing the server side tsconfig.json), hit Ctrl-Maj-B to compile. 
+Click on the debug button then on the run button.
 
 With command line
 -----------------
 
-Go to the directory containing the tsconfig.json
+Go to the root folder (containing the server side tsconfig.json) and compile
 
 ```
 tsc -p
 ```
 
-node.js Server
-============
+Generate client-server mapping (file commons.ts)
 
-Usage :
-------------
-Download or fetch form github, install dependencies and launch server :
 ```
-cd server
-npm install
-node server.js
+node ./build/server/common_tr.js
 ```
-or for the last line,
+
+
+Client Webapp building :
+=================
+
+With Visual Studio Code
+-----------------------
+
+Open the /webapp folder (containing the client side tsconfig.json), hit Ctrl-Maj-B to compile. 
+
+With command line
+-----------------
+
+Go to the /webapp folder (containing the client side tsconfig.json) and type
+
 ```
-node --harmony server.js
+tsc -p
 ```
-if you plan to use the serial/board simulator.
-
-The board and databases are managed from webapp :
-
-webapp (requires a server to connect)
----------------------------------------------------------------
-
-Usage :
-------------
-Open file webapp/index.html in your browser
-or go to your server root address if you have set the server's options to serve static files (serve_webapp: true).
-
-
-Chromeapp (Chrome only)
-======================
-
-Allows to get data form USB serial
-
-Usage :
-------------
-Launch as chrome application
