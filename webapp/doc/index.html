@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    
+    .container {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      display: -webkit-flex;
+      display: flex;
+      -webkit-flex-flow: row wrap;
+      flex-flow: row wrap;
+    }
+    
+    .container div {
+      box-sizing: border-box;
+      min-height: 150px;
+      min-width: 150px;
+    }
+    
+    .c1 {
+      color: #ddd;
+      background-color: #5588bb;
+    }
+    
+    .c2 {
+      color: #ddd;
+      background-color: #6666aa;
+    }
+    
+    .content {
+      color: #333;
+      background-color: #b4d2f7;
+      padding-left: 2em;
+      padding-right: 2em;
+    }
+    
+    .c4 {
+      color: #333;
+      background-color: #d5dfef;
+    }
+    
+    .c5 {
+      color: #333;
+      background-color: #dfe1e5;
+    }
+    
+    .logo {
+      width: 150px;
+      font-size: 2em;
+      margin: 0 auto;
+    }
+    
+    .c1,
+    .c2,
+    .content,
+    .c4 {
+      width: 100%;
+    }
+    
+    ul {
+      list-style-type: none;
+    }
+    
+    li a {
+      text-decoration: none;
+    }
+    
+    li.H1 {
+      font-size: 1.5em;
+    }
+    
+    li.H2 {
+      margin-left: 10px;
+    }
+    
+    @media (min-width: 600px) {
+      .c1 {
+        width: 25%;
+      }
+      .c4 {
+        width: 75%;
+      }
+    }
+    
+    @media (min-width: 1000px) {
+      .container {
+        width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+  </style>
+  <title>Bci.ts - Help</title>
+</head>
+
+<body>
+  <div class="container" role="main">
+    <div class="c1">
+      <p class="logo">Bci.ts</p>
+      <nav>
+        <ul id="nav_ul"></ul>
+      </nav>
+    </div>
+    <div class="c4">
+      <div class="c2">
+
+      </div>
+      <div class="content">
+        <h1>English</h1>
+        <h2>Presentation</h2>
+        <p>A node.js Web server to control OpenBCI 32 v3 board (<a href="http://www.openbci.com/">http://www.openbci.com/</a>)
+          from browser and store data to file.</p>
+        <h2>Get started</h2>
+        <p>Install dependencies and launch server :</p>
+        <pre>
+npm --prefix ./build/ install
+node ./build/server/app.js
+        </pre>
+        <p>Point your browser to server address set in configuration (default : http://127.0.0.1:8080/ ).</p>
+        <p>(Tested with NodeJs v5.0.0 and Chromium Version 47 on Ubuntu 15.10 64)</p>
+
+
+
+        <h1>Français</h1>
+        <h2>Présentation</h2>
+        <p>Un serveur Web Node.js pour contrôler la carte OpenBCI 32 v3 (<a href="http://www.openbci.com/">http://www.openbci.com/</a>)
+          depuis le navigateur et pour enregistrer les données sur disque.</p>
+        <h2>Pour débuter</h2>
+        <p>Installer les dépendences et lancer le serveur :</p>
+        <pre>
+npm --prefix ./build/ install
+node ./build/server/app.js
+        </pre>
+        <p>Dans votre navigateur, allez à l'adresse définie dans la configuration (par défault : http://127.0.0.1:8080/ ).</p>
+        <p>(Testé avec NodeJs v5.0.0 et Chromium Version 47 sous Ubuntu 15.10 64)</p>
+
+
+
+      </div>
+      <!-- content -->
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function init() {    
+      var nav_ul = document.getElementById('nav_ul');
+      var matches = document.querySelectorAll("h1, h2");
+      var li, a, e, current_id = 0;
+      for (var i = 0, element; i < matches.length; i++) {
+        e = matches[i];
+        e.id = 'el_id' + current_id;
+        li = document.createElement('li');
+        li.className = e.tagName;
+        a = document.createElement('a');
+        a.textContent = e.textContent;
+        a.href = '#el_id' + current_id++;
+        li.appendChild(a);
+        nav_ul.appendChild(li);
+      }
+    }
+    
+    init();
+  </script>
+</body>
+
+</html>
