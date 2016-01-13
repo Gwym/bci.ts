@@ -2,20 +2,12 @@
 var version = 1;
 var i18n_en = {
     not_implemented: 'Not implemented :',
-    chrome_app_warn: 'Serial requires application to be launched as a Chrome App.',
     select_source: 'Please select a data source',
     do_connect: 'Connect',
     do_disconnect: 'Disconnect',
     disconnected: 'Disconnected',
     hide_canvas: 'Hide canvas',
     show_canvas: 'Show canvas',
-    option_select_source: 'Select a source...',
-    option_local_serial: 'Browser serial port : /dev/ttyUSB0',
-    option_load_file: 'Load file...',
-    option_local_store: 'Browser LocalStore',
-    option_add: 'Add source...',
-    option_localhost: 'Localhost : ws://127.0.0.1:8080/',
-    option_server: 'Server : ws://ws-yenah.rhcloud.com:8000/',
     connect_serial_to: 'Stream serial data to : ',
     connect_to_ws: 'Browser',
     connect_to_mongodb: 'Mongodb',
@@ -28,6 +20,9 @@ var i18n_en = {
     open: 'Open',
     close: 'Close',
     serial_path_hint: 'Serial port',
+    serial_path_list: '?',
+    serial_path_list_hint: 'Get a list of USB serial ports',
+    serial_path_hint_not_found: 'None found.',
     use_simulator: 'Simu',
     use_simulator_hint: 'Use board simulator',
     unknown: 'Unknown',
@@ -74,20 +69,12 @@ var i18n_en = {
 };
 var i18n_fr = {
     not_implemented: 'Non implementé :',
-    chrome_app_warn: "Lancer en tant qu'application Chrome est requis pour utiliser le port USB.",
     select_source: 'Veuillez sélectionner une source de données',
     do_connect: 'Connecter',
     do_disconnect: 'Déconnecter',
     disconnected: 'Déconnecté',
     hide_canvas: 'Cacher le canvas',
     show_canvas: 'Afficher le canvas',
-    option_select_source: 'Sélectionnez une source...',
-    option_local_serial: 'Port série via le navigateur : /dev/ttyUSB0',
-    option_load_file: 'Charger un fichier...',
-    option_local_store: 'LocalStore du navigateur',
-    option_add: 'Ajouter une source...',
-    option_localhost: 'Localhost : ws://127.0.0.1:8080/',
-    option_server: 'Serveur : ws://ws-yenah.rhcloud.com:8000/',
     connect_serial_to: 'Données série vers : ',
     connect_to_ws: 'navigateur',
     connect_to_mongodb: 'Mongodb',
@@ -100,6 +87,9 @@ var i18n_fr = {
     open: 'Ouvrir',
     close: 'Fermer',
     serial_path_hint: 'Port série',
+    serial_path_list: '?',
+    serial_path_list_hint: 'Obtenir la liste des ports série USB',
+    serial_path_hint_not_found: 'Non trouvé.',
     use_simulator: 'Simu',
     use_simulator_hint: 'Utiliser le simulateur',
     unknown: 'Inconnu',
@@ -164,6 +154,7 @@ var MessageTypes;
     MessageTypes[MessageTypes["Control"] = 4] = "Control";
     MessageTypes[MessageTypes["Data"] = 5] = "Data";
     MessageTypes[MessageTypes["Error"] = 6] = "Error";
+    MessageTypes[MessageTypes["RequestPorts"] = 7] = "RequestPorts";
 })(MessageTypes || (MessageTypes = {}));
 ;
 var SerialStates;
@@ -241,7 +232,7 @@ class UiSerial {
             worker.postMessage({
                 target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open,
                 data: {
-                    port: this.serial_path_select.options[this.serial_path_select.selectedIndex].value,
+                    port: this.serial_path_input.value,
                     useSimulator: this.use_simulator_checkbox.checked
                 }
             });
@@ -307,23 +298,30 @@ class UiSerial {
         this.open_close_button.className = 'serial_button';
         this.open_close_button.type = 'button';
         e.appendChild(this.open_close_button);
-        this.serial_path_select = document.createElement('select');
-        this.serial_path_select.id = 'board_port_selector';
-        this.serial_path_select.title = i18n.serial_path_hint;
-        var o = document.createElement('option');
-        o.textContent = '/dev/ttyUSB0';
-        o.value = '/dev/ttyUSB0';
-        this.serial_path_select.appendChild(o);
-        e.appendChild(this.serial_path_select);
+        this.serial_path_input = document.createElement('input');
+        this.serial_path_input.id = 'serial_path_input';
+        this.serial_path_input.title = i18n.serial_path_hint;
+        this.serial_path_input.value = UiSerial.default_path;
+        e.appendChild(this.serial_path_input);
+        this.serial_path_list = document.createElement('input');
+        this.serial_path_list.className = 'serial_path_list_button';
+        this.serial_path_list.type = 'button';
+        this.serial_path_list.title = i18n.serial_path_list_hint;
+        this.serial_path_list.value = i18n.serial_path_list;
+        this.serial_path_list.onclick = () => {
+            log(i18n.serial_path_list_hint + ' > ');
+            worker.postMessage({ target: this.identifier, messageType: MessageTypes.RequestPorts, data: {} });
+        };
+        e.appendChild(this.serial_path_list);
         this.use_simulator_checkbox = document.createElement('input');
         this.use_simulator_checkbox.type = 'checkbox';
         this.use_simulator_checkbox.title = i18n.use_simulator_hint;
         this.use_simulator_checkbox.onchange = (e) => {
             if (this.use_simulator_checkbox.checked) {
-                this.serial_path_select.disabled = true;
+                this.serial_path_input.disabled = true;
             }
             else {
-                this.serial_path_select.disabled = false;
+                this.serial_path_input.disabled = false;
             }
         };
         e.appendChild(this.use_simulator_checkbox);
@@ -445,14 +443,17 @@ class UiSerial {
     }
     handler(m) {
         switch (m.messageType) {
+            case MessageTypes.Data:
+                this.onData(m);
+                break;
             case MessageTypes.State:
                 this.onState(m);
                 break;
             case MessageTypes.Control:
                 this.onControl(m);
                 break;
-            case MessageTypes.Data:
-                this.onData(m);
+            case MessageTypes.RequestPorts:
+                this.onPortsList(m);
                 break;
             case MessageTypes.Error:
                 this.onError(new Error(m.data.error));
@@ -738,6 +739,17 @@ class UiSerial {
             console.warn('serial unknown oncontrol ' + str + ' m:' + JSON.stringify(str));
         }
     }
+    onPortsList(m) {
+        if (m.data.ports.length > 0) {
+            this.serial_path_input.value = m.data.ports[0];
+            for (var i = 0; i < m.data.ports.length; i++) {
+                log(m.data.ports[i]);
+            }
+        }
+        else {
+            log(i18n.serial_path_hint_not_found);
+        }
+    }
     onError(error) {
         console.error(error);
         log(error.toString());
@@ -745,6 +757,7 @@ class UiSerial {
         this.board_error.style.display = 'inline';
     }
 }
+UiSerial.default_path = '/dev/ttyUSB0';
 "use strict";
 class UiPersistor {
     constructor(id, options) {

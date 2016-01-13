@@ -129,14 +129,25 @@ class ObciSerial {
         this.timestamp_start = process.hrtime();
     }
     handler(message) {
-        if (message.messageType === commons_1.MessageTypes.RequestState) {
-            this.dispatcher({ target: this.id, messageType: commons_1.MessageTypes.State, data: { state: this.state } });
-        }
-        else if (message.messageType === commons_1.MessageTypes.Control) {
+        if (message.messageType === commons_1.MessageTypes.Control) {
             if (typeof (message.event) !== 'number') {
                 console.warn('handler > no Event');
             }
             this.event(message.event, message.data);
+        }
+        else if (message.messageType === commons_1.MessageTypes.RequestState) {
+            this.dispatcher({ target: this.id, messageType: commons_1.MessageTypes.State, data: { state: this.state } });
+        }
+        else if (message.messageType === commons_1.MessageTypes.RequestPorts) {
+            var portNameList = [];
+            sp.list((err, ports) => {
+                for (var i = 0; i < ports.length; i++) {
+                    if (ports[i].comName.toLowerCase().indexOf("usb") !== -1) {
+                        portNameList.push(ports[i].comName);
+                    }
+                }
+                this.dispatcher({ target: this.id, messageType: commons_1.MessageTypes.RequestPorts, data: { ports: portNameList } });
+            });
         }
         else {
             console.error(new Error('UnknownMessageType'));

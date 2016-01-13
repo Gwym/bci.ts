@@ -17,7 +17,7 @@ export interface StateEventMachine {
 
 // Communication
 // !!! WARNING : enum type WebsocketCreate === 0 and WebsocketClose === 1 are used raw in index.html !!!
-export enum MessageTypes { WebsocketCreate, WebsocketClose, RequestState, State, Control, Data, Error };
+export enum MessageTypes { WebsocketCreate, WebsocketClose, RequestState, State, Control, Data, Error, RequestPorts };
 
 export interface MessageConsumer {
     handler: (message: any) => void; // local message type (WebsocketMessage.data)
@@ -40,6 +40,7 @@ export interface WebsocketMessage {
     state?: number // MessageTypes.State
     samples?: number[], accel?: number[], count?: number, // MessageTypes.Data
     control?: string, connect_to_ws?: boolean, // MessageTypes.Control 
+    ports?: string[], // MessageTypes.RequestPorts 
     error?: string // MessageTypes.Error
   };
 }

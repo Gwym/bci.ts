@@ -6,20 +6,12 @@ var version = 1;
 module I18n {
   export interface Corpus {
     not_implemented: string
-    chrome_app_warn: string
     select_source: string
     do_connect: string
     do_disconnect: string
     disconnected: string
     hide_canvas: string
     show_canvas: string
-    option_select_source: string
-    option_local_serial: string
-    option_load_file: string
-    option_local_store: string
-    option_add: string
-    option_localhost: string
-    option_server: string
     connect_serial_to: string
     connect_to_ws: string
     connect_to_mongodb: string
@@ -32,6 +24,9 @@ module I18n {
     open: string
     close: string
     serial_path_hint: string
+    serial_path_list: string
+    serial_path_list_hint: string
+    serial_path_hint_not_found: string
     use_simulator: string
     use_simulator_hint: string
     unknown: string
@@ -83,20 +78,12 @@ module I18n {
 
 var i18n_en: I18n.Corpus = {
   not_implemented: 'Not implemented :',
-  chrome_app_warn: 'Serial requires application to be launched as a Chrome App.', // TODO (5) : see http://...tuto###
   select_source: 'Please select a data source',
   do_connect: 'Connect',
   do_disconnect: 'Disconnect',
   disconnected: 'Disconnected',
   hide_canvas: 'Hide canvas',
   show_canvas: 'Show canvas',
-  option_select_source: 'Select a source...',
-  option_local_serial: 'Browser serial port : /dev/ttyUSB0',
-  option_load_file: 'Load file...',
-  option_local_store: 'Browser LocalStore',
-  option_add: 'Add source...',
-  option_localhost: 'Localhost : ws://127.0.0.1:8080/',
-  option_server: 'Server : ws://ws-yenah.rhcloud.com:8000/',
   connect_serial_to: 'Stream serial data to : ',
   connect_to_ws: 'Browser',
   connect_to_mongodb: 'Mongodb',
@@ -109,6 +96,9 @@ var i18n_en: I18n.Corpus = {
   open: 'Open',
   close: 'Close',
   serial_path_hint: 'Serial port',
+  serial_path_list: '?',
+  serial_path_list_hint: 'Get a list of USB serial ports',
+  serial_path_hint_not_found: 'None found.',
   use_simulator: 'Simu',
   use_simulator_hint: 'Use board simulator',
   unknown: 'Unknown',
@@ -156,20 +146,12 @@ var i18n_en: I18n.Corpus = {
 
 var i18n_fr: I18n.Corpus = {
   not_implemented: 'Non implementé :',
-  chrome_app_warn: "Lancer en tant qu'application Chrome est requis pour utiliser le port USB.", // TODO (5) : Voir http://...tuto###
   select_source: 'Veuillez sélectionner une source de données',
   do_connect: 'Connecter',
   do_disconnect: 'Déconnecter',
   disconnected: 'Déconnecté',
   hide_canvas: 'Cacher le canvas',
   show_canvas: 'Afficher le canvas',
-  option_select_source: 'Sélectionnez une source...',
-  option_local_serial: 'Port série via le navigateur : /dev/ttyUSB0',
-  option_load_file: 'Charger un fichier...',
-  option_local_store: 'LocalStore du navigateur',
-  option_add: 'Ajouter une source...',
-  option_localhost: 'Localhost : ws://127.0.0.1:8080/',
-  option_server: 'Serveur : ws://ws-yenah.rhcloud.com:8000/',
   connect_serial_to: 'Données série vers : ',
   connect_to_ws: 'navigateur',
   connect_to_mongodb: 'Mongodb',
@@ -182,6 +164,9 @@ var i18n_fr: I18n.Corpus = {
   open: 'Ouvrir',
   close: 'Fermer',
   serial_path_hint: 'Port série',
+  serial_path_list: '?',
+  serial_path_list_hint: 'Obtenir la liste des ports série USB',
+  serial_path_hint_not_found: 'Non trouvé.',
   use_simulator: 'Simu',
   use_simulator_hint: 'Utiliser le simulateur',
   unknown: 'Inconnu',

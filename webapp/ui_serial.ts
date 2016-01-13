@@ -6,6 +6,8 @@
 
 class UiSerial implements MessageConsumer {
   
+  static default_path = '/dev/ttyUSB0';
+  
   identifier: BlocksTypes;
   private command = {
     resetBoard: 'v',
@@ -30,7 +32,8 @@ class UiSerial implements MessageConsumer {
   private open_close_button: HTMLButtonElement;
   private start_stop_button: HTMLButtonElement;
   private reset_board_button: HTMLButtonElement;
-  private serial_path_select: HTMLSelectElement;
+  private serial_path_input: HTMLInputElement;
+  private serial_path_list: HTMLButtonElement;
   private use_simulator_checkbox: HTMLInputElement;
   private board_state: HTMLElement;
   private board_error: HTMLElement;
@@ -91,7 +94,7 @@ class UiSerial implements MessageConsumer {
     worker.postMessage(<WebsocketMessage>{ 
       target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open, 
       data: <ISerialOptions>{
-        port: this.serial_path_select.options[this.serial_path_select.selectedIndex].value,
+        port: this.serial_path_input.value,
         useSimulator: this.use_simulator_checkbox.checked  
       }
     });
@@ -153,26 +156,32 @@ class UiSerial implements MessageConsumer {
       this.open_close_button.type = 'button';
       e.appendChild(this.open_close_button);
       
-      this.serial_path_select = document.createElement('select');
-      this.serial_path_select.id = 'board_port_selector';
-      this.serial_path_select.title = i18n.serial_path_hint;
+      this.serial_path_input = document.createElement('input');
+      this.serial_path_input.id = 'serial_path_input';
+      this.serial_path_input.title = i18n.serial_path_hint;
+      this.serial_path_input.value = UiSerial.default_path;    
+      e.appendChild(this.serial_path_input);
       
-      var o = document.createElement('option');
-      o.textContent = '/dev/ttyUSB0';
-      o.value = '/dev/ttyUSB0';
-      this.serial_path_select.appendChild(o);
-      
-      e.appendChild(this.serial_path_select);
+      this.serial_path_list = document.createElement('input');
+      this.serial_path_list.className = 'serial_path_list_button';
+      this.serial_path_list.type = 'button';
+      this.serial_path_list.title = i18n.serial_path_list_hint;
+      this.serial_path_list.value = i18n.serial_path_list;
+      this.serial_path_list.onclick = () => {
+        log(i18n.serial_path_list_hint + ' > ');
+        worker.postMessage(<WebsocketMessage>{ target: this.identifier, messageType: MessageTypes.RequestPorts, data: {} });
+      };  
+      e.appendChild(this.serial_path_list);
       
       this.use_simulator_checkbox = document.createElement('input');
       this.use_simulator_checkbox.type = 'checkbox';
       this.use_simulator_checkbox.title = i18n.use_simulator_hint;
       this.use_simulator_checkbox.onchange = (e: Event) => { 
         if (this.use_simulator_checkbox.checked) {
-          this.serial_path_select.disabled = true;
+          this.serial_path_input.disabled = true;
         }
         else {
-          this.serial_path_select.disabled = false;
+          this.serial_path_input.disabled = false;
         }
       } ; 
       e.appendChild(this.use_simulator_checkbox);
@@ -335,14 +344,17 @@ class UiSerial implements MessageConsumer {
   handler(m: WebsocketMessage) {
     
     switch (m.messageType) {
+      case MessageTypes.Data:
+        this.onData(m);
+        break;
       case MessageTypes.State: 
         this.onState(m);
         break;
       case MessageTypes.Control:
         this.onControl(m);
         break;
-      case MessageTypes.Data:
-        this.onData(m);
+      case MessageTypes.RequestPorts:
+        this.onPortsList(m);
         break;
       case MessageTypes.Error:
         this.onError(new Error(m.data.error));
@@ -715,6 +727,21 @@ class UiSerial implements MessageConsumer {
       else {
         log('obci > ' + JSON.stringify(str)); // TODO (1) : request decoder
         console.warn('serial unknown oncontrol ' + str + ' m:' + JSON.stringify(str));
+      }
+    }
+    
+     private onPortsList(m: WebsocketMessage) {
+    
+      if (m.data.ports.length > 0) {
+        // set the first result as default
+        this.serial_path_input.value = m.data.ports[0];
+        // and list all result
+        for (var i = 0 ; i < m.data.ports.length ; i++) {
+          log(m.data.ports[i]);
+        }
+      }
+      else {
+        log(i18n.serial_path_hint_not_found);
       }
     }
     

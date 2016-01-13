@@ -157,8 +157,13 @@ canvas {
 }
 
 
-#board_port_selector {
+#serial_path_input {
   min-width: 12em;
+  margin-right: 4px;
+}
+
+.serial_path_list_button {
+  padding: 2px;
   margin-right: 4px;
 }
 

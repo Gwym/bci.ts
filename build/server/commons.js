@@ -16,6 +16,7 @@ var BlocksTypes = exports.BlocksTypes;
     MessageTypes[MessageTypes["Control"] = 4] = "Control";
     MessageTypes[MessageTypes["Data"] = 5] = "Data";
     MessageTypes[MessageTypes["Error"] = 6] = "Error";
+    MessageTypes[MessageTypes["RequestPorts"] = 7] = "RequestPorts";
 })(exports.MessageTypes || (exports.MessageTypes = {}));
 var MessageTypes = exports.MessageTypes;
 ;
