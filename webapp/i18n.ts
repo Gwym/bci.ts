@@ -10,7 +10,7 @@ module I18n {
     select_source: string
     do_connect: string
     do_disconnect: string
-    disconnected: string,
+    disconnected: string
     hide_canvas: string
     show_canvas: string
     option_select_source: string
@@ -31,16 +31,18 @@ module I18n {
     stop: string
     open: string
     close: string
+    serial_path_hint: string
+    use_simulator: string
+    use_simulator_hint: string
     unknown: string
     board_state: {
       [key: string]: string
-      STATE_CLOSED: string
-      STATE_OPENING: string
-      STATE_INIT: string
-      STATE_IDLE: string
-      STATE_STREAMING: string
-      STATE_WAIT_ENDING: string
-      STATE_WRITING: string
+      0: string
+      1: string
+      2: string
+      3: string
+      4: string
+      5: string
     }
     board_settings: string
     board_settings_button: string
@@ -106,15 +108,17 @@ var i18n_en: I18n.Corpus = {
   stop: 'Stop',
   open: 'Open',
   close: 'Close',
+  serial_path_hint: 'Serial port',
+  use_simulator: 'Simu',
+  use_simulator_hint: 'Use board simulator',
   unknown: 'Unknown',
   board_state: {
-    STATE_CLOSED: 'Closed',
-    STATE_OPENING: 'Opening...',
-    STATE_INIT: 'Waiting for board ack...',
-    STATE_IDLE: 'Ready',
-    STATE_STREAMING: 'Streaming data',
-    STATE_WAIT_ENDING: 'Busy...',
-    STATE_WRITING: 'Writing...'
+    0: 'Closed',
+    1: 'Opening...',
+    2: 'Waiting for board ack...',
+    3: 'Ready',
+    4: 'Streaming data',
+    5: 'Busy...'
   },
   board_settings: 'Settings : ',
   board_settings_button: 'Settings',
@@ -177,15 +181,17 @@ var i18n_fr: I18n.Corpus = {
   stop: 'Arrêter',
   open: 'Ouvrir',
   close: 'Fermer',
+  serial_path_hint: 'Port série',
+  use_simulator: 'Simu',
+  use_simulator_hint: 'Utiliser le simulateur',
   unknown: 'Inconnu',
   board_state: {
-    STATE_CLOSED: 'Fermée',
-    STATE_OPENING: 'Ouverture en cours...',
-    STATE_INIT: 'Attente réponse carte...',
-    STATE_IDLE: 'Prête',
-    STATE_STREAMING: 'Flux de données',
-    STATE_WAIT_ENDING: 'Occupée...',
-    STATE_WRITING: 'Ecriture...'
+    0: 'Fermée',
+    1: 'Ouverture en cours...',
+    2: 'Attente réponse carte...',
+    3: 'Prête',
+    4: 'Flux de données',
+    5: 'Occupée...'
   },
   board_settings: 'Réglages : ',
   board_settings_button: 'Réglages',

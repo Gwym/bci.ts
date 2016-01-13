@@ -11,7 +11,11 @@ class UiSerial implements MessageConsumer {
     resetBoard: 'v',
     getChannelsSettings: 'D',
     resetChannelsSettings : 'd',
-    getRegistersSettings : '?'
+    getRegistersSettings : '?',
+    ChannelFirst: 'x',
+    ChannelLast: 'X',   
+    leadOffFirst: 'z',
+    leadOffLast: 'Z'
   }
 
   constructor(id: BlocksTypes, options: {}) {
@@ -26,6 +30,8 @@ class UiSerial implements MessageConsumer {
   private open_close_button: HTMLButtonElement;
   private start_stop_button: HTMLButtonElement;
   private reset_board_button: HTMLButtonElement;
+  private serial_path_select: HTMLSelectElement;
+  private use_simulator_checkbox: HTMLInputElement;
   private board_state: HTMLElement;
   private board_error: HTMLElement;
   private board_settings: HTMLElement;
@@ -83,7 +89,11 @@ class UiSerial implements MessageConsumer {
 
     this.open_close_button.disabled = true;
     worker.postMessage(<WebsocketMessage>{ 
-      target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open, data: {}
+      target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open, 
+      data: <ISerialOptions>{
+        port: this.serial_path_select.options[this.serial_path_select.selectedIndex].value,
+        useSimulator: this.use_simulator_checkbox.checked  
+      }
     });
   }
 
@@ -123,6 +133,7 @@ class UiSerial implements MessageConsumer {
   init(options?: { name?: string }) {
     
         // system.addControl(name, e)
+     var label: HTMLLabelElement;
      var container: HTMLElement = document.getElementById('blocks-control');
 
      var e: HTMLElement = document.createElement('span');
@@ -141,6 +152,35 @@ class UiSerial implements MessageConsumer {
       this.open_close_button.className = 'serial_button';
       this.open_close_button.type = 'button';
       e.appendChild(this.open_close_button);
+      
+      this.serial_path_select = document.createElement('select');
+      this.serial_path_select.id = 'board_port_selector';
+      this.serial_path_select.title = i18n.serial_path_hint;
+      
+      var o = document.createElement('option');
+      o.textContent = '/dev/ttyUSB0';
+      o.value = '/dev/ttyUSB0';
+      this.serial_path_select.appendChild(o);
+      
+      e.appendChild(this.serial_path_select);
+      
+      this.use_simulator_checkbox = document.createElement('input');
+      this.use_simulator_checkbox.type = 'checkbox';
+      this.use_simulator_checkbox.title = i18n.use_simulator_hint;
+      this.use_simulator_checkbox.onchange = (e: Event) => { 
+        if (this.use_simulator_checkbox.checked) {
+          this.serial_path_select.disabled = true;
+        }
+        else {
+          this.serial_path_select.disabled = false;
+        }
+      } ; 
+      e.appendChild(this.use_simulator_checkbox);
+      
+      label = document.createElement('label');
+      label.textContent = i18n.use_simulator;
+      label.title = i18n.use_simulator_hint;
+      e.appendChild(label);
 
       this.start_stop_button = document.createElement('input');
       this.start_stop_button.className = 'serial_button';
@@ -151,7 +191,7 @@ class UiSerial implements MessageConsumer {
       this.fps.textContent = '0';
       e.appendChild(this.fps);
       
-      var label = document.createElement('label');
+      label = document.createElement('label');
       label.textContent = i18n.sample_per_second;
       e.appendChild(label);
       
@@ -170,11 +210,11 @@ class UiSerial implements MessageConsumer {
       e.appendChild(label);
 
       this.board_state = document.createElement('span');
-      this.board_state.id = 'board_state'; // for applying styles
+      this.board_state.id = 'board_state';
       e.appendChild(this.board_state);
 
       this.board_error = document.createElement('span');
-      this.board_error.id = 'board_error'; // for applying styles
+      this.board_error.id = 'board_error';
       this.board_error.addEventListener('click', (e) => { this.board_error.textContent = ''; this.board_error.style.display = 'none'; });
       // TODO (0) : when shoul error message be cleard ? on user action ? on board ack ? on reset ?
       e.appendChild(this.board_error);
@@ -425,7 +465,7 @@ class UiSerial implements MessageConsumer {
 
       // Channel Setting Commands : disabled 1 to SRB1 6
       value_changed = false;
-      channel_str = 'x' + (c + 1); // channels are 1 based
+      channel_str = this.command.ChannelFirst + (c + 1); // channels are 1 based
       for (i = 1; i < 7; i++) {
         input = <HTMLInputElement>settings[i].firstChild;
         if (input.dataset['original_value'] !== input.value) {
@@ -435,12 +475,12 @@ class UiSerial implements MessageConsumer {
         channel_str += input.value;
       }
       if (value_changed) {
-        board_str += channel_str + 'X';
+        board_str += channel_str + this.command.ChannelLast;
       }
 
       // LeadOff Impedance Commands : 7 & 8
       value_changed = false;
-      channel_str = 'z' + (c + 1); // channels are 1 based
+      channel_str = this.command.leadOffFirst + (c + 1); // channels are 1 based
       for (i = 7; i < 9; i++) { // skip channel name at 0, disabled 1 to SRB1 6
         input = <HTMLInputElement>settings[i].firstChild;
         if (input.dataset['original_value'] !== input.value) {
@@ -450,12 +490,11 @@ class UiSerial implements MessageConsumer {
         channel_str += input.value;
       }
       if (value_changed) {
-        board_str += channel_str + 'Z';
+        board_str += channel_str + this.command.leadOffLast;
       }
     }
     this.settings_string = board_str;
   }
-
 
   private applySettingsChanges() {
 
@@ -485,6 +524,7 @@ class UiSerial implements MessageConsumer {
       }
     }
   }
+  
   private restoreOriginalSettings() {
 
     console.log('restoreOriginalSettings > settings_string:' + this.settings_string);
@@ -526,7 +566,7 @@ class UiSerial implements MessageConsumer {
       // if (m.state === oldState) {  return;  }
 
       this.board_state.textContent = i18n.board_state[newState];
-      this.board_state.className = newState.toString();
+      this.board_state.className = 'board_state_' + newState.toString();
 
       if (newState !== SerialStates.Idle) {
         this.bsb_get.disabled = true;

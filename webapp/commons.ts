@@ -55,6 +55,13 @@ enum SerialStates { Closed, Opening, WaitingForBoard, Idle, Streaming, WaitEndin
 enum SerialEvents { Open, Close, GetPut, StreamStart, StreamStop, OnOpen, OnControl, OnEndOfSection, WriteNext, Error, Timeout};
 enum SerialControls { };
 
+interface ISerialOptions {
+  port?: string;
+  baudrate?: number;
+  logControl?: boolean;
+  useSimulator?: boolean;
+}
+
 // Storage
 
 // !!! WARNING : enum type PersistorStates is used in i18n and in css for state styling !!!

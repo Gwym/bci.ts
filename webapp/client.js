@@ -27,15 +27,17 @@ var i18n_en = {
     stop: 'Stop',
     open: 'Open',
     close: 'Close',
+    serial_path_hint: 'Serial port',
+    use_simulator: 'Simu',
+    use_simulator_hint: 'Use board simulator',
     unknown: 'Unknown',
     board_state: {
-        STATE_CLOSED: 'Closed',
-        STATE_OPENING: 'Opening...',
-        STATE_INIT: 'Waiting for board ack...',
-        STATE_IDLE: 'Ready',
-        STATE_STREAMING: 'Streaming data',
-        STATE_WAIT_ENDING: 'Busy...',
-        STATE_WRITING: 'Writing...'
+        0: 'Closed',
+        1: 'Opening...',
+        2: 'Waiting for board ack...',
+        3: 'Ready',
+        4: 'Streaming data',
+        5: 'Busy...'
     },
     board_settings: 'Settings : ',
     board_settings_button: 'Settings',
@@ -97,15 +99,17 @@ var i18n_fr = {
     stop: 'Arrêter',
     open: 'Ouvrir',
     close: 'Fermer',
+    serial_path_hint: 'Port série',
+    use_simulator: 'Simu',
+    use_simulator_hint: 'Utiliser le simulateur',
     unknown: 'Inconnu',
     board_state: {
-        STATE_CLOSED: 'Fermée',
-        STATE_OPENING: 'Ouverture en cours...',
-        STATE_INIT: 'Attente réponse carte...',
-        STATE_IDLE: 'Prête',
-        STATE_STREAMING: 'Flux de données',
-        STATE_WAIT_ENDING: 'Occupée...',
-        STATE_WRITING: 'Ecriture...'
+        0: 'Fermée',
+        1: 'Ouverture en cours...',
+        2: 'Attente réponse carte...',
+        3: 'Prête',
+        4: 'Flux de données',
+        5: 'Occupée...'
     },
     board_settings: 'Réglages : ',
     board_settings_button: 'Réglages',
@@ -222,7 +226,11 @@ class UiSerial {
             resetBoard: 'v',
             getChannelsSettings: 'D',
             resetChannelsSettings: 'd',
-            getRegistersSettings: '?'
+            getRegistersSettings: '?',
+            ChannelFirst: 'x',
+            ChannelLast: 'X',
+            leadOffFirst: 'z',
+            leadOffLast: 'Z'
         };
         this.control_string = '';
         this._board_virtual_disabled = true;
@@ -231,7 +239,11 @@ class UiSerial {
         this.open_handler = () => {
             this.open_close_button.disabled = true;
             worker.postMessage({
-                target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open, data: {}
+                target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.Open,
+                data: {
+                    port: this.serial_path_select.options[this.serial_path_select.selectedIndex].value,
+                    useSimulator: this.use_simulator_checkbox.checked
+                }
             });
         };
         this.close_handler = () => {
@@ -282,6 +294,7 @@ class UiSerial {
         }
     }
     init(options) {
+        var label;
         var container = document.getElementById('blocks-control');
         var e = document.createElement('span');
         var h1 = document.createElement('h1');
@@ -294,6 +307,30 @@ class UiSerial {
         this.open_close_button.className = 'serial_button';
         this.open_close_button.type = 'button';
         e.appendChild(this.open_close_button);
+        this.serial_path_select = document.createElement('select');
+        this.serial_path_select.id = 'board_port_selector';
+        this.serial_path_select.title = i18n.serial_path_hint;
+        var o = document.createElement('option');
+        o.textContent = '/dev/ttyUSB0';
+        o.value = '/dev/ttyUSB0';
+        this.serial_path_select.appendChild(o);
+        e.appendChild(this.serial_path_select);
+        this.use_simulator_checkbox = document.createElement('input');
+        this.use_simulator_checkbox.type = 'checkbox';
+        this.use_simulator_checkbox.title = i18n.use_simulator_hint;
+        this.use_simulator_checkbox.onchange = (e) => {
+            if (this.use_simulator_checkbox.checked) {
+                this.serial_path_select.disabled = true;
+            }
+            else {
+                this.serial_path_select.disabled = false;
+            }
+        };
+        e.appendChild(this.use_simulator_checkbox);
+        label = document.createElement('label');
+        label.textContent = i18n.use_simulator;
+        label.title = i18n.use_simulator_hint;
+        e.appendChild(label);
         this.start_stop_button = document.createElement('input');
         this.start_stop_button.className = 'serial_button';
         this.start_stop_button.type = 'button';
@@ -301,7 +338,7 @@ class UiSerial {
         this.fps = document.createElement('var');
         this.fps.textContent = '0';
         e.appendChild(this.fps);
-        var label = document.createElement('label');
+        label = document.createElement('label');
         label.textContent = i18n.sample_per_second;
         e.appendChild(label);
         this.frame_count = document.createElement('var');
@@ -507,7 +544,7 @@ class UiSerial {
         for (c = 0; c < channels.length; c++) {
             settings = channels.item(c).children;
             value_changed = false;
-            channel_str = 'x' + (c + 1);
+            channel_str = this.command.ChannelFirst + (c + 1);
             for (i = 1; i < 7; i++) {
                 input = settings[i].firstChild;
                 if (input.dataset['original_value'] !== input.value) {
@@ -516,10 +553,10 @@ class UiSerial {
                 channel_str += input.value;
             }
             if (value_changed) {
-                board_str += channel_str + 'X';
+                board_str += channel_str + this.command.ChannelLast;
             }
             value_changed = false;
-            channel_str = 'z' + (c + 1);
+            channel_str = this.command.leadOffFirst + (c + 1);
             for (i = 7; i < 9; i++) {
                 input = settings[i].firstChild;
                 if (input.dataset['original_value'] !== input.value) {
@@ -528,7 +565,7 @@ class UiSerial {
                 channel_str += input.value;
             }
             if (value_changed) {
-                board_str += channel_str + 'Z';
+                board_str += channel_str + this.command.leadOffLast;
             }
         }
         this.settings_string = board_str;
@@ -579,7 +616,7 @@ class UiSerial {
     onState(m) {
         var newState = m.data.state;
         this.board_state.textContent = i18n.board_state[newState];
-        this.board_state.className = newState.toString();
+        this.board_state.className = 'board_state_' + newState.toString();
         if (newState !== SerialStates.Idle) {
             this.bsb_get.disabled = true;
             this.bsb_reset.disabled = true;
@@ -965,6 +1002,7 @@ var fft = function (Ind, Npair, Ar, Ai) {
     }
 };
 "use strict";
+console.log('Detected language : ' + navigator.language);
 const env = {
     websocketPath: 'ws://127.0.0.1:8080/'
 };

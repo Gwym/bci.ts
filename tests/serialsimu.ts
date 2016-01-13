@@ -126,7 +126,7 @@ var sinIter = function* (phase: number) {
 
 
 
-export module sp {
+// export module sp {
 // util.inherits(SerialSimulator, stream.Stream);
   export class SerialPort extends stream.Stream {
   
@@ -300,7 +300,7 @@ export module sp {
     }
 
   };
-}
+// }
 
   
 

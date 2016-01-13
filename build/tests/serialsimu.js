@@ -72,120 +72,117 @@ var sinIter = function* (phase) {
         phi++;
     }
 };
-var sp;
-(function (sp) {
-    class SerialPort extends stream.Stream {
-        constructor(path, options, openImmediately, callback) {
-            super();
-            this.debug_frame_counter = 0;
-            this.debug_frame_offset = 0;
-            this.stream_frame_ms = 10;
-            this.control_frame_ms = 1;
-            this.debugSinGen = sinIter(0);
-            this.control_string = '';
-            this.feedReplier = (s) => {
-                this.control_string += s;
-                if (this.control_interval_ID === undefined) {
-                    this.control_interval_ID = setInterval(() => {
-                        var current_head = this.control_string.slice(0, 10);
-                        if (current_head.length === 0) {
-                            clearInterval(this.control_interval_ID);
-                            this.control_interval_ID = undefined;
-                            return;
-                        }
-                        this.control_string = this.control_string.slice(current_head.length);
-                        console.log('Simulator > Send data ' + current_head.replace(/\r/gm, '\\r').replace(/\n/gm, '\\n'));
-                        var length = current_head.length;
-                        var dataBuffer = new Buffer(current_head);
-                        this.emit('data', dataBuffer);
-                    }, this.control_frame_ms);
-                }
-            };
-            console.log('SerialSimulator > Create ' + path + ' ' + options);
-            if (typeof options.framerate === 'number') {
-                console.log('SerialSimulator > set framerate to ' + options.framerate);
-                this.stream_frame_ms = options.framerate;
-            }
-        }
-        open(callback) {
-            console.log('SIMULATOR > OPEN');
-            setTimeout(() => {
-                if (simulate_open_error) {
-                    callback(new Error('test error'));
-                }
-                else {
-                    callback(null);
-                }
-            }, 0);
-        }
-        close(callback) {
-            console.log('SIMULATOR > CLOSE');
-            setTimeout(() => {
-                callback(null);
-            }, 0);
-        }
-        write(s, callback) {
-            console.log('Simulator > Write ' + s);
-            if (typeof s !== 'string') {
-                throw new Error('SerialSimulator.write > argument must be a string ' + s + ' ' + typeof s);
-            }
-            var cmd = s;
-            if (this.current_generator) {
-                console.log('Simulator > feeding generator ' + cmd);
-                var res = this.current_generator.next(cmd);
-                console.log(res);
-                if (res.value !== undefined) {
-                    this.feedReplier(res.value);
-                }
-                if (res.done) {
-                    this.current_generator = undefined;
-                }
-                return;
-            }
-            switch (cmd) {
-                case 'b':
-                    this.stream_interval_ID = setInterval(() => {
-                        for (var k = 0; k < 10; k++) {
-                            var length = 10;
-                            var dataBuffer = new Buffer(length);
-                            for (var i = 0; i < length; i++) {
-                                dataBuffer[i] = this.debugSinGen.next().value;
-                            }
-                            this.emit('data', dataBuffer);
-                        }
-                    }, this.stream_frame_ms);
-                    break;
-                case 's':
-                    setTimeout(() => {
-                        clearInterval(this.stream_interval_ID);
-                    }, 500);
-                    break;
-                default:
-                    if (acks[cmd] === null) {
-                        console.log('Simulator > skip command ' + cmd);
+class SerialPort extends stream.Stream {
+    constructor(path, options, openImmediately, callback) {
+        super();
+        this.debug_frame_counter = 0;
+        this.debug_frame_offset = 0;
+        this.stream_frame_ms = 10;
+        this.control_frame_ms = 1;
+        this.debugSinGen = sinIter(0);
+        this.control_string = '';
+        this.feedReplier = (s) => {
+            this.control_string += s;
+            if (this.control_interval_ID === undefined) {
+                this.control_interval_ID = setInterval(() => {
+                    var current_head = this.control_string.slice(0, 10);
+                    if (current_head.length === 0) {
+                        clearInterval(this.control_interval_ID);
+                        this.control_interval_ID = undefined;
+                        return;
                     }
-                    else if (typeof acks[cmd] === 'string') {
-                        this.feedReplier(acks[cmd]);
-                    }
-                    else if (typeof acks[cmd] === 'function') {
-                        console.log('Simulator > starting generator ' + cmd);
-                        this.current_generator = acks[cmd](cmd);
-                        var res = this.current_generator.next();
-                        console.log(res);
-                        if (res.value !== undefined) {
-                            this.feedReplier(res.value);
-                        }
-                        if (res.done) {
-                            this.current_generator = undefined;
-                        }
-                    }
-                    else {
-                        console.error('Simulator > Unknown command ' + s);
-                    }
+                    this.control_string = this.control_string.slice(current_head.length);
+                    console.log('Simulator > Send data ' + current_head.replace(/\r/gm, '\\r').replace(/\n/gm, '\\n'));
+                    var length = current_head.length;
+                    var dataBuffer = new Buffer(current_head);
+                    this.emit('data', dataBuffer);
+                }, this.control_frame_ms);
             }
-            setTimeout(() => { callback(null, { bytesSent: s.length }); }, 0);
+        };
+        console.log('SerialSimulator > Create ' + path + ' ' + options);
+        if (typeof options.framerate === 'number') {
+            console.log('SerialSimulator > set framerate to ' + options.framerate);
+            this.stream_frame_ms = options.framerate;
         }
     }
-    sp.SerialPort = SerialPort;
-    ;
-})(sp = exports.sp || (exports.sp = {}));
+    open(callback) {
+        console.log('SIMULATOR > OPEN');
+        setTimeout(() => {
+            if (simulate_open_error) {
+                callback(new Error('test error'));
+            }
+            else {
+                callback(null);
+            }
+        }, 0);
+    }
+    close(callback) {
+        console.log('SIMULATOR > CLOSE');
+        setTimeout(() => {
+            callback(null);
+        }, 0);
+    }
+    write(s, callback) {
+        console.log('Simulator > Write ' + s);
+        if (typeof s !== 'string') {
+            throw new Error('SerialSimulator.write > argument must be a string ' + s + ' ' + typeof s);
+        }
+        var cmd = s;
+        if (this.current_generator) {
+            console.log('Simulator > feeding generator ' + cmd);
+            var res = this.current_generator.next(cmd);
+            console.log(res);
+            if (res.value !== undefined) {
+                this.feedReplier(res.value);
+            }
+            if (res.done) {
+                this.current_generator = undefined;
+            }
+            return;
+        }
+        switch (cmd) {
+            case 'b':
+                this.stream_interval_ID = setInterval(() => {
+                    for (var k = 0; k < 10; k++) {
+                        var length = 10;
+                        var dataBuffer = new Buffer(length);
+                        for (var i = 0; i < length; i++) {
+                            dataBuffer[i] = this.debugSinGen.next().value;
+                        }
+                        this.emit('data', dataBuffer);
+                    }
+                }, this.stream_frame_ms);
+                break;
+            case 's':
+                setTimeout(() => {
+                    clearInterval(this.stream_interval_ID);
+                }, 500);
+                break;
+            default:
+                if (acks[cmd] === null) {
+                    console.log('Simulator > skip command ' + cmd);
+                }
+                else if (typeof acks[cmd] === 'string') {
+                    this.feedReplier(acks[cmd]);
+                }
+                else if (typeof acks[cmd] === 'function') {
+                    console.log('Simulator > starting generator ' + cmd);
+                    this.current_generator = acks[cmd](cmd);
+                    var res = this.current_generator.next();
+                    console.log(res);
+                    if (res.value !== undefined) {
+                        this.feedReplier(res.value);
+                    }
+                    if (res.done) {
+                        this.current_generator = undefined;
+                    }
+                }
+                else {
+                    console.error('Simulator > Unknown command ' + s);
+                }
+        }
+        setTimeout(() => { callback(null, { bytesSent: s.length }); }, 0);
+    }
+}
+exports.SerialPort = SerialPort;
+;

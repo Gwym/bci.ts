@@ -4,17 +4,11 @@
 
 import * as fs from "fs";
 import * as sp from "serialport";
-// import {sp} from "../../tests/serialsimu"
-import {StateEventMachine, SerialStates, SerialEvents, MessageConsumer, WebsocketMessage, MessageTypes, BlocksTypes} from "../commons"
+import * as spSimu from "../../tests/serialsimu"
+import {StateEventMachine, SerialStates, SerialEvents, MessageConsumer, WebsocketMessage, MessageTypes, BlocksTypes, ISerialOptions} from "../commons"
 
 export interface IDispatcher {
 		(arg: WebsocketMessage): void;
-}
-
-export interface ISerialOptions {
-  port?: string;
-  baudrate?: number;
-  log_control?: boolean;
 }
 
 interface EventTable {
@@ -44,45 +38,15 @@ export class ObciSerial implements MessageConsumer {
   private frame_count = 0;
   private timestamp_start: number[];
 
-  private log_control: boolean;
+  private log_control = false;
 
   constructor(identifier: string, options: ISerialOptions, disp: IDispatcher) {
 
     this.id = BlocksTypes.Serial;
-    this.log_control = options.log_control || false;
-
-    // TODO (2) : serialPort.list
-    var port = options.port || '/dev/ttyUSB0';
-    var baudrate = options.baudrate || 115200;
 
     this.dispatcher = disp;
 
     this.timestamp_start = process.hrtime();
-
-    try {
-
-      console.log('serial > contructor port:' + port + ' rate:' + baudrate);
-      this.serialPort = new sp.SerialPort(port, {
-        baudrate: baudrate
-        // ,parser: this.parser
-      },
-        false); // false : do not open immediately
-
-      this.serialPort.on('error', (err: Error) => {
-        console.log('serial > onerror ' + err);
-        this.event(SerialEvents.Error, err);
-      });
-
-      this.serialPort.on('data', (d: number[]) => { this.parser(null, d) })
-
-      // serial.setMaxListeners('frame', 10); // node.js default
-      // serial.setMaxListeners('control', 10); // node.js default
-
-    } catch (e) {
-      // Error means port is not available for listening.
-      console.log('serial > catch ' + e);
-      this.event(SerialEvents.Error, { type: 'NO SERIAL PORT' });
-    }
   }
 
   handler(message: WebsocketMessage) {
@@ -105,7 +69,8 @@ export class ObciSerial implements MessageConsumer {
 
   private parser(emitter: any, buffer: number[]): void {
 
-    var timestamp_step = process.hrtime(this.timestamp_start);
+    // TODO (2) : send timings informations to client and store to file
+    // var timestamp_step = process.hrtime(this.timestamp_start);
     this.timestamp_start = process.hrtime();
     // console.log(timestamp_step + ' obci_parser > len:' + buffer.length + ' parse_control:' + this.parse_control + ' parse_frame:' + this.parse_frame);
 
@@ -191,7 +156,37 @@ export class ObciSerial implements MessageConsumer {
   private log_stream: fs.WriteStream;
   private pending_write: string[] = [];
 
-  private open() {
+  private open(options: ISerialOptions) {
+    
+    // TODO (2) : serialPort.list
+    this.log_control = options.logControl || false;
+    var port = options.port; // || '/dev/ttyUSB0';
+    options.baudrate = options.baudrate || 115200;
+    
+    try {
+
+      console.log('serial > contructor port:' + port + ' rate:' + options.baudrate + ' useSimulator:' + options.useSimulator + ' log:' + this.log_control);
+      
+      if (options.useSimulator) {
+        this.serialPort = new spSimu.SerialPort(port, options, false);
+      }
+      else {
+        this.serialPort = new sp.SerialPort(port, options, false); 
+      }
+
+      this.serialPort.on('error', (err: Error) => {
+        console.log('serial > onerror ' + err);
+        this.event(SerialEvents.Error, err);
+      });
+
+      this.serialPort.on('data', (d: number[]) => { this.parser(null, d) })
+
+    } catch (e) {
+      // Error means port is not available for listening.
+      console.log('serial > catch ' + e);
+      this.event(SerialEvents.Error, { type: 'NO SERIAL PORT' });
+    }
+    
     this.serialPort.open((err: Error) => {
       console.log('open callback err: ' + err + ' ' + typeof err);
       if (err) {
@@ -226,6 +221,9 @@ export class ObciSerial implements MessageConsumer {
         this.dispatcher({ target: this.id, messageType: MessageTypes.Error, data: { error: err.toString() } });
         this.event(SerialEvents.Error, err);
       }
+      
+      // TODO (1) : delete this.serialPort ?
+      
     });
 
     if (this.log_control) {
@@ -340,8 +338,8 @@ export class ObciSerial implements MessageConsumer {
 
   private state_table: StateTable = {
     [SerialStates.Closed]: {
-      [SerialEvents.Open]: () => {
-        this.open();
+      [SerialEvents.Open]: (options: ISerialOptions) => {
+        this.open(options);
         this.setTimer(SerialEvents.Timeout, 3000); // 3s
         return SerialStates.Opening;
       }
@@ -515,8 +513,7 @@ export class ObciSerial implements MessageConsumer {
 
   event(e: SerialEvents, data?: any) {
 
-    var d = new Date();
-    
+    // var d = new Date();
     // console.log(d.toLocaleTimeString() + ':' + d.getMilliseconds() + ' > event: (' + e + ')' + SerialEvents[e]
     //  + ' state: (' + this._state + ')' + SerialStates[this._state] + ' data: ' + (typeof data === 'string' ? data.replace(/\r/gm, '\\r').replace(/\n/gm, '\\n') : data));
 

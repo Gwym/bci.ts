@@ -1,6 +1,8 @@
 # bci.ts
 Brain computer interface in Typescript
 
+Description : A node.js Web server to control OpenBCI 32 board (http://www.openbci.com/) from browser and store data to file.
+
 Note : a compiled version (javascript targeting ES6 and source map) is supplied, installing Typescript and compiling is optional,
 only required if you want to modifiy sources, target another ES version or remove source mapping.
 
@@ -25,7 +27,7 @@ Client :
 Point your browser to server address set in configuration (default : http://127.0.0.1:8080/ ).
 
 
-(Tested with NodeJs v5.0.0 and Chromium Version 47.0.2526.73 on Ubuntu 15.10 (64-bit))
+(Tested with NodeJs v5.0.0 and Chromium Version 47 on Ubuntu 15.10 64)
 
 
 

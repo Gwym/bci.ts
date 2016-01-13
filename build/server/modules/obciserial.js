@@ -1,6 +1,7 @@
 "use strict";
 var fs = require("fs");
 var sp = require("serialport");
+var spSimu = require("../../tests/serialsimu");
 var commons_1 = require("../commons");
 class ObciSerial {
     constructor(identifier, options, disp) {
@@ -10,14 +11,15 @@ class ObciSerial {
         this.samples = [];
         this.accel = [];
         this.frame_count = 0;
+        this.log_control = false;
         this.pending_write = [];
         this.timers = [];
         this._state = commons_1.SerialStates.Closed;
         this.writing = false;
         this.state_table = {
             [commons_1.SerialStates.Closed]: {
-                [commons_1.SerialEvents.Open]: () => {
-                    this.open();
+                [commons_1.SerialEvents.Open]: (options) => {
+                    this.open(options);
                     this.setTimer(commons_1.SerialEvents.Timeout, 3000);
                     return commons_1.SerialStates.Opening;
                 }
@@ -123,26 +125,8 @@ class ObciSerial {
             }
         };
         this.id = commons_1.BlocksTypes.Serial;
-        this.log_control = options.log_control || false;
-        var port = options.port || '/dev/ttyUSB0';
-        var baudrate = options.baudrate || 115200;
         this.dispatcher = disp;
         this.timestamp_start = process.hrtime();
-        try {
-            console.log('serial > contructor port:' + port + ' rate:' + baudrate);
-            this.serialPort = new sp.SerialPort(port, {
-                baudrate: baudrate
-            }, false);
-            this.serialPort.on('error', (err) => {
-                console.log('serial > onerror ' + err);
-                this.event(commons_1.SerialEvents.Error, err);
-            });
-            this.serialPort.on('data', (d) => { this.parser(null, d); });
-        }
-        catch (e) {
-            console.log('serial > catch ' + e);
-            this.event(commons_1.SerialEvents.Error, { type: 'NO SERIAL PORT' });
-        }
     }
     handler(message) {
         if (message.messageType === commons_1.MessageTypes.RequestState) {
@@ -159,7 +143,6 @@ class ObciSerial {
         }
     }
     parser(emitter, buffer) {
-        var timestamp_step = process.hrtime(this.timestamp_start);
         this.timestamp_start = process.hrtime();
         if (this.parse_control) {
             this.event(commons_1.SerialEvents.OnControl, buffer.toString());
@@ -210,7 +193,28 @@ class ObciSerial {
             }
         }
     }
-    open() {
+    open(options) {
+        this.log_control = options.logControl || false;
+        var port = options.port;
+        options.baudrate = options.baudrate || 115200;
+        try {
+            console.log('serial > contructor port:' + port + ' rate:' + options.baudrate + ' useSimulator:' + options.useSimulator + ' log:' + this.log_control);
+            if (options.useSimulator) {
+                this.serialPort = new spSimu.SerialPort(port, options, false);
+            }
+            else {
+                this.serialPort = new sp.SerialPort(port, options, false);
+            }
+            this.serialPort.on('error', (err) => {
+                console.log('serial > onerror ' + err);
+                this.event(commons_1.SerialEvents.Error, err);
+            });
+            this.serialPort.on('data', (d) => { this.parser(null, d); });
+        }
+        catch (e) {
+            console.log('serial > catch ' + e);
+            this.event(commons_1.SerialEvents.Error, { type: 'NO SERIAL PORT' });
+        }
         this.serialPort.open((err) => {
             console.log('open callback err: ' + err + ' ' + typeof err);
             if (err) {
@@ -335,7 +339,6 @@ class ObciSerial {
         }
     }
     event(e, data) {
-        var d = new Date();
         if (this.state_table[this._state][e] === undefined) {
             console.error({ error: 'UnkonwnEvent', event: e, state: this._state });
             return;

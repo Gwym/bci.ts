@@ -3,6 +3,9 @@
 /// <reference path="common.ts" />
 /// <reference path="./i18n.ts" />
 
+// TODO (1) :  Detect langage an apply i18n
+console.log ('Detected language : ' + navigator.language);
+
 const env = {
   // protocol: 'eg001', // set in worker
   websocketPath: 'ws://127.0.0.1:8080/'
