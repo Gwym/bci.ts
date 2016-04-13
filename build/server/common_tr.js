@@ -7,3 +7,4 @@ var com = fs.readFileSync('./server/commons.ts', 'utf8');
 com = warning + com.replace(/export /g, '');
 fs.writeFileSync(outfile, com, 'utf8');
 console.log('wrote ' + path.resolve(outfile));
+//# sourceMappingURL=common_tr.js.map

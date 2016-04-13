@@ -186,3 +186,4 @@ class SerialPort extends stream.Stream {
 }
 exports.SerialPort = SerialPort;
 ;
+//# sourceMappingURL=serialsimu.js.map

@@ -7,3 +7,4 @@ var Persistor;
     }
     Persistor.FilePersistor = FilePersistor;
 })(Persistor = exports.Persistor || (exports.Persistor = {}));
+//# sourceMappingURL=filepersistor.js.map

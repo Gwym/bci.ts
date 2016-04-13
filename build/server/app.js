@@ -44,7 +44,7 @@ var users = {
 };
 var server = http.createServer((req, res) => {
     req.headers.url = req.url;
-    req.headers.ip = req.connection.remoteAddress;
+    req.headers.ip = req.socket.remoteAddress;
     req.addListener('end', function () {
         file.serve(req, res, function (err, result) {
             if (err) {
@@ -63,6 +63,7 @@ var wss = new WebSocketServer({ server: server, clientTracking: true }, function
 });
 var ws_connection_counter = 0;
 wss.on('connection', function (ws) {
+    console.log('protocol: ' + ws.protocol + ' protocolVersion:' + ws.protocolVersion);
     if (ws.protocol !== env.protocol) {
         console.log('WS > bad protocol, closing ' + ws.protocol + ' ' + env.protocol);
         ws.close(1000, 'PROTOCOL ERROR ' + ws.protocol);
@@ -89,8 +90,8 @@ wss.on('connection', function (ws) {
         catch (e) {
             console.log('WS > error ' + e + ', closing ' + ws.ID);
             console.log(message.data);
-            throw e;
             ws.close(1000, 'JSON ERROR OR DISPATCHING ERROR');
+            throw e;
         }
     });
 });
@@ -109,3 +110,4 @@ var replyAsync = function (wsID, message) {
         console.warn('no socket ' + wsID + ' for message ' + JSON.stringify(message));
     }
 };
+//# sourceMappingURL=app.js.map

@@ -130,7 +130,9 @@ var wss = new WebSocketServer(
 var ws_connection_counter = 0; // TODO (2) : nodeObserver
 
 wss.on('connection', function(ws) {
-
+   
+  console.log('protocol: ' + ws.protocol + ' protocolVersion:' + ws.protocolVersion)
+   
   if (ws.protocol !== env.protocol) {
     console.log('WS > bad protocol, closing ' + ws.protocol + ' ' + env.protocol);
 
@@ -172,8 +174,8 @@ wss.on('connection', function(ws) {
     catch (e) {
       console.log('WS > error ' + e + ', closing ' + ws.ID);
       console.log(message.data);
-      throw e; // console.error(e);
       ws.close(1000, 'JSON ERROR OR DISPATCHING ERROR'); // TODO (3) : separate JSON and DISPATCHING exceptions
+      throw e; // console.error(e);
     }
 
   });

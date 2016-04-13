@@ -381,3 +381,4 @@ ObciSerial.LIMIT = 512;
 ObciSerial.FRAME_LENGTH = 33;
 ObciSerial.END_OFFSET = ObciSerial.FRAME_LENGTH - 2;
 exports.ObciSerial = ObciSerial;
+//# sourceMappingURL=obciserial.js.map

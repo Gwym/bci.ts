@@ -73,3 +73,4 @@ var PersistorEvents = exports.PersistorEvents;
 (function (PersistorControls) {
 })(exports.PersistorControls || (exports.PersistorControls = {}));
 var PersistorControls = exports.PersistorControls;
+//# sourceMappingURL=commons.js.map
