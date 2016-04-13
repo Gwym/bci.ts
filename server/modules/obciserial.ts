@@ -118,6 +118,8 @@ export class ObciSerial implements MessageConsumer {
 
       var current_byte: number, current_frame_counter: number, d: number[], j: number;
 
+      // TODO (0) : separate channels to dispatch channels on different sockets/clients
+      
       while (this.buf.length > ObciSerial.FRAME_LENGTH) {
 
         current_byte = this.buf.shift();

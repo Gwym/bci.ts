@@ -74,14 +74,14 @@ var users = {
 var server = http.createServer((req, res) => {
 
   req.headers.url = req.url;
-  req.headers.ip = req.connection.remoteAddress;
+  req.headers.ip = req.socket.remoteAddress;
 
  // logger.info(req.headers);
    
   // res.writeHead(200, { 'Content-Type': 'text/html' });
   // res.end(html);
   
-  req.addListener('end', function() {
+  (<NodeJS.ReadableStream>req.addListener('end', function() {
     file.serve(req, res, function(err: any, result: any) {
       if (err) {
         console.log(err);
@@ -91,7 +91,7 @@ var server = http.createServer((req, res) => {
         res.end('<!DOCTYPE html><html><head><head><body>404 : Brain not found.</body></html>');
       }
     });
-  }).resume();
+  })).resume();
 
 }).listen(env.port, env.ipaddress);
 
@@ -109,6 +109,17 @@ var test = function() {
 
 setTimeout(test, 2000);
 */
+
+/*
+// TODO (2) : extend custom WebSocket 
+declare module "ws" {
+  interface WebSocket {
+      protocol: string;
+      ID: number;
+      userID: number;
+      binaryType: any;
+  }
+}  */
 
 var wss = new WebSocketServer(
   { server: server, clientTracking: true }, // TODO (2) : verifyClient

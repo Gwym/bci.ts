@@ -225,7 +225,7 @@ class UiSerial implements MessageConsumer {
       this.board_error = document.createElement('span');
       this.board_error.id = 'board_error';
       this.board_error.addEventListener('click', (e) => { this.board_error.textContent = ''; this.board_error.style.display = 'none'; });
-      // TODO (0) : when shoul error message be cleard ? on user action ? on board ack ? on reset ?
+      // TODO (0) : when should error message be cleard ? on user action ? on board ack ? on reset ?
       e.appendChild(this.board_error);
 
       // board settings
@@ -303,6 +303,7 @@ class UiSerial implements MessageConsumer {
 
         //bsb_get_registers.disabled = true;
         worker.postMessage(<WebsocketMessage>{
+          // TODO (0) : MessageType.GetRegisters, data: { silent: bool } // silent is used for the ack management ?
             target: this.identifier, messageType: MessageTypes.Control, event: SerialEvents.GetPut, data: this.command.getRegistersSettings 
         });
       }
