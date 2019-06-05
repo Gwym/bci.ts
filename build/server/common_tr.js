@@ -1,5 +1,7 @@
-var fs = require("fs");
-var path = require("path");
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const path = require("path");
 var outfile = './webapp/commons.ts';
 var warning = '// WARNING : GENERATED FILE, DO NOT MODIFY (modifiy server/commons.ts ' + "\n"
     + '// and run node build/common_tr.js' + "\n\n";

@@ -1,5 +1,6 @@
 "use strict";
-var stream = require('stream');
+Object.defineProperty(exports, "__esModule", { value: true });
+const stream = require("stream");
 var simulate_open_error = false;
 var packet_size = 10;
 var setChannelsSettings = function* (start) {

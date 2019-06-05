@@ -5,8 +5,8 @@
   "main": "app.js",
   "license": "MIT",
   "dependencies": {
-    "ws": "0.8.1",
     "node-static": "",
-    "serialport": ""
+    "serialport": "",
+    "ws": "^7.0.0"
   }
 }

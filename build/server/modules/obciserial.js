@@ -1,8 +1,9 @@
 "use strict";
-var fs = require("fs");
-var sp = require("serialport");
-var spSimu = require("../../tests/serialsimu");
-var commons_1 = require("../commons");
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const sp = require("serialport");
+const spSimu = require("../../tests/serialsimu");
+const commons_1 = require("../commons");
 class ObciSerial {
     constructor(identifier, options, disp) {
         this.parse_control = false;

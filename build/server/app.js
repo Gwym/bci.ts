@@ -1,9 +1,10 @@
 "use strict";
-var http = require("http");
-var ws = require("ws");
-var commons_1 = require("./commons");
-var obciserial_1 = require("./modules/obciserial");
-var filepersistor_1 = require("./modules/filepersistor");
+Object.defineProperty(exports, "__esModule", { value: true });
+const http = require("http");
+const ws = require("ws");
+const commons_1 = require("./commons");
+const obciserial_1 = require("./modules/obciserial");
+const filepersistor_1 = require("./modules/filepersistor");
 var FileServer = require('node-static');
 var WebSocketServer = ws.Server;
 const env = {
